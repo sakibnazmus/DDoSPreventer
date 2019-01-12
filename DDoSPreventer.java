@@ -67,40 +67,6 @@ public class DDoSPreventer implements IOFMessageListener, IFloodlightModule {
 	private Map<DatapathId, Integer> states;
 	private Map<DatapathId, DatapathId> forwardingSwitch;
 	private IOFSwitch flaggedSwitch = null;
-	
-	/*public OFPort getPortWithMostFlowRules(Set<FlowRuleStats> flow_stats) {
-		Map<OFPort, Integer> portFlowCount = new ConcurrentHashMap<>(); 
-		if(!flow_stats.isEmpty()) {
-			for(FlowRuleStats rule: flow_stats) {
-				Match match = rule.getMatch();
-				OFPort port = (OFPort) match.get(MatchField.IN_PORT);
-				if(port != null) {
-					//System.out.println("Rule in port: " + port.getPortNumber());
-					if(portFlowCount.containsKey(port)) {
-						portFlowCount.put(port, portFlowCount.get(port)+1);
-					} else {
-						portFlowCount.putIfAbsent(port, 1);
-					}
-				}
-			}
-			OFPort port = null;
-			int max = 0;
-			if(!portFlowCount.isEmpty()) {
-				Set<OFPort> keyset = portFlowCount.keySet();
-				
-				while(keyset.iterator().hasNext()){
-					OFPort p = keyset.iterator().next();
-					int cnt = portFlowCount.get(p);
-					if(cnt > max) {
-						max = cnt;
-						port = p;
-					}
-				}
-			}
-			return port;
-		}
-		return null;
-	}*/
 
 	//Here we are getting the most utilized port for flagging it
 	
@@ -146,6 +112,7 @@ public class DDoSPreventer implements IOFMessageListener, IFloodlightModule {
 	public void doForward(IOFSwitch sw, OFMessage msg,OFPort flaggedPort, OFPort forwardingPort, int op) {
 		//op 1 for add
 		//op 2 for modify
+		//op 3 for delete
 		
 		OFFactory factory = sw.getOFFactory();
 		Match match = factory.buildMatch()
@@ -352,31 +319,9 @@ public class DDoSPreventer implements IOFMessageListener, IFloodlightModule {
 					states.put(dpId, 0);
 					flaggedPort.remove(dpId);
 					flaggedSwitch = null;
+					doForward(sw, msg. flaggedPort.get(dpId), forward.getValue(), 3);
 				}
 			}
-			/*Set<FlowRuleStats> frs = statService.getFlowStats(dpId);
-			if(frs.size() < MIN_FLOW_ENTRY) {
-				this.forwardingSwitch.remove(dpId);
-				states.put(dpId, 0);
-				this.flaggedPort.remove(dpId);
-			} else {
-				OFPort flaggedPort = this.flaggedPort.get(dpId);
-				DatapathId currForSwitch = forwardingSwitch.get(dpId);
-				Set<FlowRuleStats> fs = statService.getFlowStats(currForSwitch);
-				if(fs.size() > MAX_FLOW_ENTRY) {
-					Pair<DatapathId, OFPort> forward = getForwardingPort(dpId, flaggedPort);
-					if(forward != null) {
-						doForward(sw, msg, flaggedPort, forward.getValue(), 2);
-						this.forwardingSwitch.put(dpId, forward.getKey());
-					} else {
-						doDrop(sw, this.flaggedPort.get(dpId));
-						this.flaggedPort.remove(dpId);
-						forwardingSwitch.remove(dpId);
-						this.states.put(dpId, 0);
-					}
-				}
-				return Command.CONTINUE;
-			}*/
 		}
 		
         return Command.CONTINUE;

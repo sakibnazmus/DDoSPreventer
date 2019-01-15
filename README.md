@@ -1,0 +1,1 @@
+DDoSPreventer is a java module built on top of the existing floodlight project. Floodlight is a SDN controller written in java. Here our work was to mitigate the effects of DoS attack in Software Defined Network.
